@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# IDE settings
+.idea/
+.vs/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Tooling
+*.swp
+*.swp*
+
+# Logs
+*.log

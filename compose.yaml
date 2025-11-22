@@ -1,0 +1,40 @@
+﻿
+
+
+services:
+  clinic-api:
+    build:
+      context: .
+      dockerfile: ClinicManagement-API/Dockerfile
+    environment:
+      - CONNECTIONSTRING__CLINIC=Host=clinic-database;Port=5432;Database=clinic-db;Username=clinic;Password=clinic
+    networks:
+      - backend
+    depends_on:
+      - clinic-database
+    
+  clinic-database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: clinic-db
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: clinic
+    networks:
+      - backend
+    volumes: [ "pgdata:/var/lib/postgresql/clinic-data" ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d clinic-db -h 127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    ports:
+      - "5450:5432"
+  
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
+    driver: bridge

@@ -1,0 +1,23 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+
+namespace ClinicManagement_API.Domains.Entities;
+
+public sealed class Clinic
+{
+    public Guid ClinicId { get; set; }
+    public string Code { get; set; } = default!;
+    public string Name { get; set; } = default!;
+    public string TimeZone { get; set; } = "Asia/Ho_Chi_Minh";
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+
+    public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+    public ICollection<Service> Services { get; set; } = new List<Service>();
+    public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; } = new List<DoctorAvailability>();
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+}

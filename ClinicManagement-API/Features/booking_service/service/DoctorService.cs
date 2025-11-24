@@ -30,11 +30,7 @@ namespace ClinicManagement_API.Features.booking_service.service
 
         public async Task<IResult> CreateDoctorAsync(CreateDoctorRequest request)
         {
-            var existingDoctor = await _context.Doctors.AsNoTracking().AnyAsync(d => d.Code == request.Code && d.ClinicId == request.ClinicId);
-            if (existingDoctor != null)
-            {
-                return Results.Conflict(new ApiResponse<object>(false, $"Doctor with code '{request.Code}' already exists in this clinic.", null));
-            }
+            
 
             var doctor = new Doctor
             {

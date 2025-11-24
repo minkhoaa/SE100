@@ -19,6 +19,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IClinicService, ClinicService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -33,6 +34,7 @@ app.MapBookingSlotEndpoint();
 app.MapBookingEndpoint();
 app.MapClinicEndpoint();
 app.MapDoctorEndpoint();
+app.MapServiceEndpoint();
 
 using (var scope = app.Services.CreateScope())
 {

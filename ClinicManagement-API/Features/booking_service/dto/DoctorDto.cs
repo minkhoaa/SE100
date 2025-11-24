@@ -8,6 +8,7 @@ public record CreateDoctorRequest(
 
 public record UpdateDoctorRequest(
     Guid CLinicId,
+    string Code,
     string FullName,
     string? Specialty,
     string? Phone,

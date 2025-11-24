@@ -5,6 +5,7 @@ namespace ClinicManagement_API.Domains.Enums
         Booked,
         Confirmed,
         Cancelled,
+        Rescheduling,
         NoShow
     }
 }

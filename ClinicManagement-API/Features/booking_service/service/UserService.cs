@@ -1,9 +1,11 @@
+using System.Data;
 using ClinicManagement_API.Domains.Entities;
 using ClinicManagement_API.Domains.Enums;
 using ClinicManagement_API.Features.booking_service.dto;
 using ClinicManagement_API.Infrastructure.Persisstence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace ClinicManagement_API.Features.booking_service.service
 {
@@ -13,10 +15,15 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> GetServicesAsync(Guid? clinicId, string? nameOrCode, bool? isActive);
         Task<IResult> GetDoctorsAsync(Guid? clinicId, string? nameOrCode, string? specialty, Guid? serviceId, bool? isActive);
         Task<IResult> GetAvailabilityAsync(Guid doctorId, DateOnly from, DateOnly to);
+        Task<IResult> CreateAvailabilityAsync(CreateDoctorAvailability request);
+
         Task<IResult> GetSlotsAsync(Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date);
         Task<IResult> CreateBookingAsync(CreateBookingRequest req);
         Task<IResult> GetBookingAsync(Guid bookingId);
         Task<IResult> ConfirmBookingAsync(Guid bookingId);
+        Task<IResult> CancelAppointmentAsync(string token);
+        Task<IResult> ReschedulingAppointmentAsync(string token, DateTime startTime, DateTime startEnd);
+        
     }
 
     public class UserService : IUserService
@@ -106,15 +113,50 @@ namespace ClinicManagement_API.Features.booking_service.service
                 var dow = (byte)date.DayOfWeek;
                 var dayAvail = availabilities.Where(x => x.DayOfWeek == dow
                     && (!x.EffectiveFrom.HasValue || x.EffectiveFrom.Value.Date <= date.ToDateTime(TimeOnly.MinValue))
-                    && (!x.EffectiveTo.HasValue || x.EffectiveTo.Value.Date >= date.ToDateTime(TimeOnly.MinValue)));
+                    && (!x.EffectiveTo.HasValue || x.EffectiveTo.Value.Date >= date.ToDateTime(TimeOnly.MinValue)))
+                    ;
 
-                foreach (var slot in dayAvail)
-                {
-                    results.Add(new AvailabilityDto(date, slot.StartTime, slot.EndTime, slot.SlotSizeMin));
-                }
+                results.AddRange(dayAvail.Select(x => new AvailabilityDto(date, x.StartTime, x.EndTime, x.SlotSizeMin)));
             }
 
             return Results.Ok(new ApiResponse<IEnumerable<AvailabilityDto>>(true, "OK", results));
+        }
+
+        public async Task<IResult> CreateAvailabilityAsync(CreateDoctorAvailability request)
+        {
+            var existedClinic = await _context.Clinics.AsNoTracking().AnyAsync(a => a.ClinicId == request.ClinicId);
+            if (!existedClinic) return Results.NotFound("Clinic is not found");
+            var existedDoctor = await _context.Doctors.AsNoTracking().AnyAsync(a => a.DoctorId == request.DoctorId);
+            if (!existedDoctor) return Results.NotFound("Doctor is not found");
+            var aval = new DoctorAvailability
+            {
+                DoctorId = request.DoctorId,
+                ClinicId = request.ClinicId,
+                DayOfWeek = request.DayOfWeek,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                IsActive = request.IsActive,
+                EffectiveFrom = request.EffectiveFrom,
+                EffectiveTo = request.EffectiveTo,
+                SlotSizeMin = request.SlotSizeMin
+            };
+            _context.DoctorAvailabilities.Add(aval);
+            await _context.SaveChangesAsync();
+            return Results.Ok(new ApiResponse<IEnumerable<AvailabilityDto>>(true, "OK", null));
+        }
+
+        public async Task<IResult> UpdateAvailability(Guid availId, UpdateDoctorAvailability request)
+        {
+            var existedAval = await _context.DoctorAvailabilities.AsNoTracking()
+                                  .FirstOrDefaultAsync(x => x.AvailabilityId == availId) ??
+                              throw new Exception("Cannot found Availability");
+            existedAval.EndTime = request.EndTime;
+            existedAval.IsActive = request.IsActive;
+            existedAval.SlotSizeMin = request.SlotSizeMin;
+            _context.DoctorAvailabilities.Add(existedAval);
+            await _context.SaveChangesAsync();
+            return Results.Ok($"Updated {existedAval.AvailabilityId}");
+
         }
 
         public async Task<IResult> GetSlotsAsync(Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date)
@@ -241,15 +283,25 @@ namespace ClinicManagement_API.Features.booking_service.service
             };
 
             var cancelToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-            var token = new BookingToken
+            var reschedulingToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+            var cancel = new BookingToken
             {
                 BookingId = booking.BookingId,
                 Action = "Cancel",
                 Token = cancelToken,
                 ExpiresAt = booking.StartAt
             };
+            var reschedule = new BookingToken()
+            {
+                BookingId = booking.BookingId,
+                Action = "Reschedule",
+                Token = reschedulingToken,
+                ExpiresAt = booking.StartAt
+            };
+             
 
-            booking.Tokens.Add(token);
+            booking.Tokens.Add(cancel);
+            booking.Tokens.Add(reschedule);
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
@@ -328,6 +380,75 @@ namespace ClinicManagement_API.Features.booking_service.service
             return Results.Created($"/appointments/{appointment.AppointmentId}", new ApiResponse<AppointmentResponse>(true, "Created", new AppointmentResponse(appointment.AppointmentId, appointment.Status)));
         }
 
+
+        public async Task<IResult> ReschedulingAppointmentAsync(string token, DateTime startTime, DateTime endTime)
+        {
+            var reschedulingRequest = await _context.BookingTokens.Where(x => x.Token == token && x.Action == "Reschedule"
+                                                                              && x.ExpiresAt > DateTime.UtcNow)
+                                          .Include(bookingToken => bookingToken.Booking)
+                                          .ThenInclude(booking => booking.Appointment)
+                                          .FirstOrDefaultAsync() ??
+                                      throw new Exception("Cannot found reschedule request");
+            var booking = reschedulingRequest.Booking;
+            var appointment = booking.Appointment ?? throw new Exception("Cannot find appointment");
+            if (appointment.Status is AppointmentStatus.Cancelled or AppointmentStatus.NoShow)
+                return Results.Conflict("Cannot rescheduling appointment");
+
+            var overlapAppointment = await _context.Appointments.AsNoTracking()
+                .AnyAsync(x => !(x.EndAt < startTime && x.EndAt > startTime));
+            if (overlapAppointment) Results.Conflict("Appointment is conflicted");
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            appointment.StartAt = startTime;
+            appointment.EndAt = endTime;
+            appointment.UpdatedAt = DateTime.UtcNow;
+            appointment.Status = AppointmentStatus.Rescheduling;
+            reschedulingRequest.ExpiresAt = DateTime.UtcNow;
+            _context.Appointments.Update(appointment);
+            _context.BookingTokens.Update(reschedulingRequest);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Results.Ok(new
+            {
+                isSuccess = true, 
+                message = "Update successfully"
+            });
+        }
+
+
+        public async Task<IResult> CancelAppointmentAsync(string token)
+        {
+            var cancelRequest = await _context.BookingTokens
+                                    .Where(x => x.Token == token && x.Action == "Cancel" && x.ExpiresAt > DateTime.UtcNow)
+                                    .Include(bookingToken => bookingToken.Booking)
+                                    .ThenInclude(booking => booking.Appointment).FirstOrDefaultAsync()
+                                ?? throw new Exception("Not found cancel request");
+            var booking = cancelRequest.Booking;
+            var appointment = booking.Appointment ?? throw new Exception("Cannot get appointment information");
+            if (appointment.Status is AppointmentStatus.Cancelled or AppointmentStatus.NoShow)
+                return Results.Conflict("Cannot cancel cancelled appointment ");
+            int cutoffHours = 2;
+            if (appointment.StartAt < DateTime.UtcNow.AddHours(cutoffHours))
+                return Results.Conflict("Cannot cancel appointment within 2 hours");
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            appointment.Status = AppointmentStatus.Cancelled;
+            appointment.UpdatedAt = DateTime.UtcNow; 
+            _context.Appointments.Update(appointment);
+            cancelRequest.ExpiresAt = DateTime.UtcNow;
+            _context.BookingTokens.Update(cancelRequest);
+
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Results.Ok(new
+            {
+                bookingId = booking.BookingId,
+                appointmentId = appointment.AppointmentId,
+                status = appointment.Status
+            });
+        }
+
+     
+        
         private static bool Overlaps(DateTime start1, DateTime end1, DateTime start2, DateTime end2)
             => start1 < end2 && start2 < end1;
     }

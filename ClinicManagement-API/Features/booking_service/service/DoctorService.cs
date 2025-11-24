@@ -18,6 +18,8 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> UpdateDoctorAsync(Guid doctorId, UpdateDoctorRequest request);
 
         Task<IResult> DeleteDoctorAsync(Guid doctorId);
+
+
     }
     public class DoctorService : IDoctorService
     {
@@ -31,7 +33,7 @@ namespace ClinicManagement_API.Features.booking_service.service
         public async Task<IResult> CreateDoctorAsync(CreateDoctorRequest request)
         {
             var existingDoctor = await _context.Doctors.AsNoTracking().AnyAsync(d => d.Code == request.Code && d.ClinicId == request.ClinicId);
-            if (existingDoctor != null)
+            if (existingDoctor)
             {
                 return Results.Conflict(new ApiResponse<object>(false, $"Doctor with code '{request.Code}' already exists in this clinic.", null));
             }
@@ -83,5 +85,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 ? Results.Ok(new ApiResponse<object>(true, $"Deleted {affectedRows} row(s)", null))
                 : Results.NoContent();
         }
+
+ 
     }
 }

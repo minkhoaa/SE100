@@ -1,4 +1,5 @@
 using ClinicManagement_API.Features.booking_service.handler;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
 
 namespace ClinicManagement_API.Features.booking_service.endpoint;
 
@@ -21,6 +22,8 @@ public static class BookingEndpoint
         var app = route.MapGroup("/api/doctors").WithTags("Booking Doctors");
         app.MapGet("/", UserHandler.GetDoctors);
         app.MapGet("/{doctorId:guid}/availability", UserHandler.GetAvailability);
+        app.MapPost("/availability", UserHandler.CreateAvailability);
+        app.MapPut("/availability", UserHandler.UpdateAvailability);
     }
 
     public static void MapBookingSlotEndpoint(this IEndpointRouteBuilder route)
@@ -35,5 +38,8 @@ public static class BookingEndpoint
         app.MapPost("/", UserHandler.CreateBooking);
         app.MapGet("/{bookingId:guid}", UserHandler.GetBooking);
         app.MapPost("/{bookingId:guid}/confirm", UserHandler.ConfirmBooking);
+        app.MapPost("/{bookingId:guid}/cancel", UserHandler.CancelBooking);
+        app.MapPost("/{bookingId:guid}/reschedule", UserHandler.Rescheduling);
+        
     }
 }

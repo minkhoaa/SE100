@@ -1,3 +1,4 @@
+using System.Data;
 using ClinicManagement_API.Domains.Entities;
 using ClinicManagement_API.Domains.Enums;
 using ClinicManagement_API.Features.booking_service.dto;
@@ -14,6 +15,8 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> GetServicesAsync(Guid? clinicId, string? nameOrCode, bool? isActive);
         Task<IResult> GetDoctorsAsync(Guid? clinicId, string? nameOrCode, string? specialty, Guid? serviceId, bool? isActive);
         Task<IResult> GetAvailabilityAsync(Guid doctorId, DateOnly from, DateOnly to);
+        Task<IResult> CreateAvailabilityAsync(CreateDoctorAvailability request);
+
         Task<IResult> GetSlotsAsync(Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date);
         Task<IResult> CreateBookingAsync(CreateBookingRequest req);
         Task<IResult> GetBookingAsync(Guid bookingId);
@@ -110,15 +113,50 @@ namespace ClinicManagement_API.Features.booking_service.service
                 var dow = (byte)date.DayOfWeek;
                 var dayAvail = availabilities.Where(x => x.DayOfWeek == dow
                     && (!x.EffectiveFrom.HasValue || x.EffectiveFrom.Value.Date <= date.ToDateTime(TimeOnly.MinValue))
-                    && (!x.EffectiveTo.HasValue || x.EffectiveTo.Value.Date >= date.ToDateTime(TimeOnly.MinValue)));
+                    && (!x.EffectiveTo.HasValue || x.EffectiveTo.Value.Date >= date.ToDateTime(TimeOnly.MinValue)))
+                    ;
 
-                foreach (var slot in dayAvail)
-                {
-                    results.Add(new AvailabilityDto(date, slot.StartTime, slot.EndTime, slot.SlotSizeMin));
-                }
+                results.AddRange(dayAvail.Select(x => new AvailabilityDto(date, x.StartTime, x.EndTime, x.SlotSizeMin)));
             }
 
             return Results.Ok(new ApiResponse<IEnumerable<AvailabilityDto>>(true, "OK", results));
+        }
+
+        public async Task<IResult> CreateAvailabilityAsync(CreateDoctorAvailability request)
+        {
+            var existedClinic = await _context.Clinics.AsNoTracking().AnyAsync(a => a.ClinicId == request.ClinicId);
+            if (!existedClinic) return Results.NotFound("Clinic is not found");
+            var existedDoctor = await _context.Doctors.AsNoTracking().AnyAsync(a => a.DoctorId == request.DoctorId);
+            if (!existedDoctor) return Results.NotFound("Doctor is not found");
+            var aval = new DoctorAvailability
+            {
+                DoctorId = request.DoctorId,
+                ClinicId = request.ClinicId,
+                DayOfWeek = request.DayOfWeek,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                IsActive = request.IsActive,
+                EffectiveFrom = request.EffectiveFrom,
+                EffectiveTo = request.EffectiveTo,
+                SlotSizeMin = request.SlotSizeMin
+            };
+            _context.DoctorAvailabilities.Add(aval);
+            await _context.SaveChangesAsync();
+            return Results.Ok(new ApiResponse<IEnumerable<AvailabilityDto>>(true, "OK", null));
+        }
+
+        public async Task<IResult> UpdateAvailability(Guid availId, UpdateDoctorAvailability request)
+        {
+            var existedAval = await _context.DoctorAvailabilities.AsNoTracking()
+                                  .FirstOrDefaultAsync(x => x.AvailabilityId == availId) ??
+                              throw new Exception("Cannot found Availability");
+            existedAval.EndTime = request.EndTime;
+            existedAval.IsActive = request.IsActive;
+            existedAval.SlotSizeMin = request.SlotSizeMin;
+            _context.DoctorAvailabilities.Add(existedAval);
+            await _context.SaveChangesAsync();
+            return Results.Ok($"Updated {existedAval.AvailabilityId}");
+
         }
 
         public async Task<IResult> GetSlotsAsync(Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date)

@@ -27,5 +27,9 @@ public static class AdminHandler
 
     public static Task<IResult> GetAllDoctors(IDoctorService svc)
         => svc.GetAllDoctorAsync();
+    public static Task<IResult> CreateAvailability(IUserService svc, CreateDoctorAvailability request)
+        => svc.CreateAvailabilityAsync(request);
+    public static Task<IResult> UpdateAvailability(IUserService svc, UpdateDoctorAvailability request)
+        => svc.U(request);
 
 }

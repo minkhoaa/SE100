@@ -23,5 +23,9 @@ public static class ClinicEndpoint
         {
             return await svc.DeleteClinicAsync(clinicId);
         });
+        app.MapGet("/get-all-clinics", async (IClinicService svc) =>
+        {
+            return await svc.GetAllClinicAsync();
+        });
     }
 }

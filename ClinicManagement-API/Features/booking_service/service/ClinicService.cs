@@ -9,7 +9,7 @@ namespace ClinicManagement_API.Features.booking_service.service
 
     public interface IClinicService
     {
-
+        Task<IResult> GetAllClinicAsync();
         Task<IResult> CreateClinicAsync(CreateClinicRequest request);
         Task<IResult> UpdateClinicAsync(Guid clinicId, UpdateClinicRequest request);
         Task<IResult> DeleteClinicAsync(Guid clinicId);
@@ -67,6 +67,15 @@ namespace ClinicManagement_API.Features.booking_service.service
             await _context.SaveChangesAsync();
 
             return Results.Ok(new ApiResponse<object>(true, "Clinic updated successfully", null));
+        }
+
+        public async Task<IResult> GetAllClinicAsync()
+        {
+            var clinics = await _context.Clinics
+                .Select(clinic => new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email))
+                .ToListAsync();
+
+            return Results.Ok(new ApiResponse<List<ClinicDto>>(true, "Clinics retrieved successfully", clinics));
         }
 
         public async Task<IResult> DeleteClinicAsync(Guid clinicId)

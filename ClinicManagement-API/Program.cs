@@ -18,7 +18,7 @@ builder.Services.AddDbContext<ClinicDbContext>(option => option.UseNpgsql(connec
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IClinicService, ClinicService>();
-
+builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +32,7 @@ app.MapBookingDoctorEndpoint();
 app.MapBookingSlotEndpoint();
 app.MapBookingEndpoint();
 app.MapClinicEndpoint();
+app.MapDoctorEndpoint();
 
 using (var scope = app.Services.CreateScope())
 {

@@ -44,13 +44,14 @@ namespace ClinicManagement_API.Features.booking_service.service
 
             _context.Clinics.Add(clinic);
             await _context.SaveChangesAsync();
-            return Results.Created($"/clinics/{clinic.ClinicId}", new ApiResponse<ClinicDto>(true, "Clinic created successfully",
-                new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email)));
+
+            var clinicDto = new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email);
+            return Results.Created($"/clinics", new ApiResponse<ClinicDto>(true, "Clinic created successfully", clinicDto));
         }
 
         public async Task<IResult> UpdateClinicAsync(Guid clinicId, UpdateClinicRequest request)
         {
-            var affectedRows = await _context.Clinics.AsNoTracking().Where(x=>x.ClinicId == clinicId).ExecuteUpdateAsync(x => x.SetProperty(a =>
+            var affectedRows = await _context.Clinics.AsNoTracking().Where(x => x.ClinicId == clinicId).ExecuteUpdateAsync(x => x.SetProperty(a =>
                     a.Name, request.Name)
                 .SetProperty(a => a.Phone, request.Phone)
                 .SetProperty(a => a.Email, request.Email)

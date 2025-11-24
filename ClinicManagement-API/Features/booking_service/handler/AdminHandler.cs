@@ -15,4 +15,17 @@ public static class AdminHandler
 
     public static Task<IResult> GetAllClinics(IClinicService svc)
         => svc.GetAllClinicAsync();
+
+    public static Task<IResult> CreateDoctor(IDoctorService svc, CreateDoctorRequest request)
+        => svc.CreateDoctorAsync(request);
+
+    public static Task<IResult> UpdateDoctor(IDoctorService svc, Guid clinicId, UpdateDoctorRequest request)
+        => svc.UpdateDoctorAsync(clinicId, request);
+
+    public static Task<IResult> DeleteDoctor(IDoctorService svc, Guid clinicId)
+        => svc.DeleteDoctorAsync(clinicId);
+
+    public static Task<IResult> GetAllDoctors(IDoctorService svc)
+        => svc.GetAllDoctorAsync();
+
 }

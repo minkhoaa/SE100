@@ -16,7 +16,7 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> GetDoctorsAsync(Guid? clinicId, string? nameOrCode, string? specialty, Guid? serviceId, bool? isActive);
         Task<IResult> GetAvailabilityAsync(Guid doctorId, DateOnly from, DateOnly to);
         Task<IResult> CreateAvailabilityAsync(CreateDoctorAvailability request);
-
+        Task<IResult> UpdateAvailability(Guid availId, UpdateDoctorAvailability request);
         Task<IResult> GetSlotsAsync(Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date);
         Task<IResult> CreateBookingAsync(CreateBookingRequest req);
         Task<IResult> GetBookingAsync(Guid bookingId);
@@ -147,13 +147,13 @@ namespace ClinicManagement_API.Features.booking_service.service
 
         public async Task<IResult> UpdateAvailability(Guid availId, UpdateDoctorAvailability request)
         {
-            var existedAval = await _context.DoctorAvailabilities.AsNoTracking()
+            var existedAval = await _context.DoctorAvailabilities
                                   .FirstOrDefaultAsync(x => x.AvailabilityId == availId) ??
                               throw new Exception("Cannot found Availability");
             existedAval.EndTime = request.EndTime;
             existedAval.IsActive = request.IsActive;
             existedAval.SlotSizeMin = request.SlotSizeMin;
-            _context.DoctorAvailabilities.Add(existedAval);
+            _context.DoctorAvailabilities.Update(existedAval);
             await _context.SaveChangesAsync();
             return Results.Ok($"Updated {existedAval.AvailabilityId}");
 

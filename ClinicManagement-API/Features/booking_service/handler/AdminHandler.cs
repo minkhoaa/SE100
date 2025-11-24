@@ -33,8 +33,8 @@ public static class AdminHandler
         => svc.CreateService(request);
     public static Task<IResult> CreateAvailability(IUserService svc, CreateDoctorAvailability request)
         => svc.CreateAvailabilityAsync(request);
-    public static Task<IResult> UpdateAvailability(IUserService svc, UpdateDoctorAvailability request)
-        => svc.U(request);
+    public static Task<IResult> UpdateAvailability(IUserService svc, Guid availId, UpdateDoctorAvailability request)
+        => svc.UpdateAvailability(availId, request);
 
     public static Task<IResult> UpdateService(IServiceService svc, Guid serviceId, CreateServiceRequest request)
         => svc.UpdateService(serviceId, request);

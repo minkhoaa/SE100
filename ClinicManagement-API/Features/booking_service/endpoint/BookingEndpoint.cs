@@ -22,8 +22,8 @@ public static class BookingEndpoint
         var app = route.MapGroup("/api/doctors").WithTags("Booking Doctors");
         app.MapGet("/", UserHandler.GetDoctors);
         app.MapGet("/{doctorId:guid}/availability", UserHandler.GetAvailability);
-        app.MapPost("/availability", UserHandler.CreateAvailability);
-        app.MapPut("/availability", UserHandler.UpdateAvailability);
+        app.MapPost("/availability", AdminHandler.CreateAvailability);
+        app.MapPut("/availability/{availId:guid}", AdminHandler.UpdateAvailability);
     }
 
     public static void MapBookingSlotEndpoint(this IEndpointRouteBuilder route)

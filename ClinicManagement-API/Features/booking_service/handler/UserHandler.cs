@@ -35,6 +35,5 @@ public static class UserHandler
     public static Task<IResult> Rescheduling(IUserService svc, string token, DateTime start, DateTime end)
         => svc.ReschedulingAppointmentAsync(token, start, end);
     
-    public static Task<IResult> DoctorAvailabilities(IDoctorService svc, Guid doctorId)
-        => svc.DoctorAvailability(doctorId);
+
 }

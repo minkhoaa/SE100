@@ -17,6 +17,7 @@ builder.Services.AddDbContext<ClinicDbContext>(option => option.UseNpgsql(connec
 // DI
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IClinicService, ClinicService>();
 
 
 
@@ -26,6 +27,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 app.MapUserEndpoint();
+app.MapClinicEndpoint();
 
 using (var scope = app.Services.CreateScope())
 {

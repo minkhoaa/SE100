@@ -7,7 +7,7 @@ public static class BookingEndpoint
 {
     public static void MapUserEndpoint(this IEndpointRouteBuilder route)
     {
-        var app = route.MapGroup("");
+        var app = route.MapGroup("").WithTags("Booking Service");
 
         app.MapGet("/clinics", async (IUserService svc, string? nameOrCode) =>
         {

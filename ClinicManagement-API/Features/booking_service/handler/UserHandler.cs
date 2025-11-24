@@ -29,4 +29,8 @@ public static class UserHandler
 
     public static Task<IResult> ConfirmBooking(IUserService svc, Guid bookingId)
         => svc.ConfirmBookingAsync(bookingId);
+    public static Task<IResult> CancelBooking(IUserService svc, string token)
+        => svc.CancelAppointmentAsync(token);
+    public static Task<IResult> Rescheduling(IUserService svc, string token, DateTime start, DateTime end)
+        => svc.ReschedulingAppointmentAsync(token, start, end);
 }

@@ -35,5 +35,8 @@ public static class BookingEndpoint
         app.MapPost("/", UserHandler.CreateBooking);
         app.MapGet("/{bookingId:guid}", UserHandler.GetBooking);
         app.MapPost("/{bookingId:guid}/confirm", UserHandler.ConfirmBooking);
+        app.MapPost("/{bookingId:guid}/cancel", UserHandler.CancelBooking);
+        app.MapPost("/{bookingId:guid}/reschedule", UserHandler.Rescheduling);
+        
     }
 }

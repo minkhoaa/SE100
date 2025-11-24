@@ -26,7 +26,11 @@ builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();
-app.MapUserEndpoint();
+app.MapBookingClinicEndpoint();
+app.MapBookingServiceEndpoint();
+app.MapBookingDoctorEndpoint();
+app.MapBookingSlotEndpoint();
+app.MapBookingEndpoint();
 app.MapClinicEndpoint();
 
 using (var scope = app.Services.CreateScope())

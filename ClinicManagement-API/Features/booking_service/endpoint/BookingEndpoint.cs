@@ -1,47 +1,39 @@
-using ClinicManagement_API.Features.booking_service.dto;
-using ClinicManagement_API.Features.booking_service.service;
+using ClinicManagement_API.Features.booking_service.handler;
 
 namespace ClinicManagement_API.Features.booking_service.endpoint;
 
 public static class BookingEndpoint
 {
-    public static void MapUserEndpoint(this IEndpointRouteBuilder route)
+    public static void MapBookingClinicEndpoint(this IEndpointRouteBuilder route)
     {
-        var app = route.MapGroup("").WithTags("Booking Service");
-
-        app.MapGet("/clinics", async (IUserService svc, string? nameOrCode) =>
-        {
-            return await svc.GetClinicsAsync(nameOrCode);
-        });
-
-        app.MapGet("/services", async (IUserService svc, Guid? clinicId, string? nameOrCode, bool? isActive) =>
-        {
-            return await svc.GetServicesAsync(clinicId, nameOrCode, isActive);
-        });
-
-        app.MapGet("/doctors", async (IUserService svc, Guid? clinicId, string? nameOrCode, string? specialty, Guid? serviceId, bool? isActive) =>
-        {
-            return await svc.GetDoctorsAsync(clinicId, nameOrCode, specialty, serviceId, isActive);
-        });
-
-        app.MapGet("/doctors/{doctorId:guid}/availability", (IUserService svc, Guid doctorId, DateOnly from, DateOnly to)
-            => svc.GetAvailabilityAsync(doctorId, from, to));
-
-        app.MapGet("/slots", (IUserService svc, Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date)
-            => svc.GetSlotsAsync(clinicId, doctorId, serviceId, date));
-
-        app.MapPost("/bookings", (IUserService svc, CreateBookingRequest req)
-            => svc.CreateBookingAsync(req));
-
-        app.MapGet("/bookings/{bookingId:guid}", (IUserService svc, Guid bookingId)
-            => svc.GetBookingAsync(bookingId));
-
-        app.MapPost("/bookings/{bookingId:guid}/confirm", (IUserService svc, Guid bookingId)
-            => svc.ConfirmBookingAsync(bookingId));
+        var app = route.MapGroup("/api/clinic").WithTags("Booking Clinics");
+        app.MapGet("/", UserHandler.GetClinics);
     }
 
-    public static void MapAdminEndpoint(this IEndpointRouteBuilder route)
+    public static void MapBookingServiceEndpoint(this IEndpointRouteBuilder route)
     {
-        // Reserved for future admin APIs
+        var app = route.MapGroup("/api/services").WithTags("Booking Services");
+        app.MapGet("/", UserHandler.GetServices);
+    }
+
+    public static void MapBookingDoctorEndpoint(this IEndpointRouteBuilder route)
+    {
+        var app = route.MapGroup("/api/doctors").WithTags("Booking Doctors");
+        app.MapGet("/", UserHandler.GetDoctors);
+        app.MapGet("/{doctorId:guid}/availability", UserHandler.GetAvailability);
+    }
+
+    public static void MapBookingSlotEndpoint(this IEndpointRouteBuilder route)
+    {
+        var app = route.MapGroup("/api/slots").WithTags("Booking Slots");
+        app.MapGet("/", UserHandler.GetSlots);
+    }
+
+    public static void MapBookingEndpoint(this IEndpointRouteBuilder route)
+    {
+        var app = route.MapGroup("/api/bookings").WithTags("Bookings");
+        app.MapPost("/", UserHandler.CreateBooking);
+        app.MapGet("/{bookingId:guid}", UserHandler.GetBooking);
+        app.MapPost("/{bookingId:guid}/confirm", UserHandler.ConfirmBooking);
     }
 }

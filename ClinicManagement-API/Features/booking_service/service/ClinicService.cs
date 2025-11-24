@@ -26,12 +26,12 @@ namespace ClinicManagement_API.Features.booking_service.service
 
         public async Task<IResult> CreateClinicAsync(CreateClinicRequest request)
         {
-            var existingClinic = await _context.Clinics.FirstOrDefaultAsync(c => c.Code == request.Code);
-            if (existingClinic != null)
+            var existingClinic = await _context.Clinics.AsNoTracking().AnyAsync(x => x.Code == request.Code);
+            if (existingClinic)
             {
-                return Results.Conflict(new ApiResponse<object>(false, $"Clinic with code '{request.Code}' already exists.", null));
+                return Results.Conflict(new ApiResponse<object>
+                    (false, $"Clinic with code '{request.Code}' already exists.", null));
             }
-
             var clinic = new Clinic
             {
                 Code = request.Code,
@@ -44,53 +44,37 @@ namespace ClinicManagement_API.Features.booking_service.service
 
             _context.Clinics.Add(clinic);
             await _context.SaveChangesAsync();
-
-            var clinicDto = new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email);
-            return Results.Created($"/clinics/{clinic.ClinicId}", new ApiResponse<ClinicDto>(true, "Clinic created successfully", clinicDto));
+            return Results.Created($"/clinics/{clinic.ClinicId}", new ApiResponse<ClinicDto>(true, "Clinic created successfully",
+                new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email)));
         }
 
         public async Task<IResult> UpdateClinicAsync(Guid clinicId, UpdateClinicRequest request)
         {
-            var clinic = await _context.Clinics.FindAsync(clinicId);
-
-            if (clinic == null)
-            {
-                return Results.NotFound(new ApiResponse<object>(false, "Clinic not found", null));
-            }
-
-            // Update properties
-            clinic.Name = request.Name;
-            clinic.Phone = request.Phone;
-            clinic.Email = request.Email;
-            clinic.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            return Results.Ok(new ApiResponse<object>(true, "Clinic updated successfully", null));
+            var affectedRows = await _context.Clinics.AsNoTracking().Where(x=>x.ClinicId == clinicId).ExecuteUpdateAsync(x => x.SetProperty(a =>
+                    a.Name, request.Name)
+                .SetProperty(a => a.Phone, request.Phone)
+                .SetProperty(a => a.Email, request.Email)
+                .SetProperty(a => a.UpdatedAt, DateTime.UtcNow)
+            );
+            return affectedRows > 0
+                ? Results.Ok(new ApiResponse<object>(true, $"Clinic updated successfully {affectedRows}", null))
+                : Results.NoContent();
         }
 
         public async Task<IResult> GetAllClinicAsync()
         {
-            var clinics = await _context.Clinics
+            var clinics = await _context.Clinics.AsNoTracking()
                 .Select(clinic => new ClinicDto(clinic.ClinicId, clinic.Code, clinic.Name, clinic.TimeZone, clinic.Phone, clinic.Email))
                 .ToListAsync();
-
             return Results.Ok(new ApiResponse<List<ClinicDto>>(true, "Clinics retrieved successfully", clinics));
         }
-
         public async Task<IResult> DeleteClinicAsync(Guid clinicId)
         {
-            var clinic = await _context.Clinics.FindAsync(clinicId);
-
-            if (clinic == null)
-            {
-                return Results.NotFound(new ApiResponse<object>(false, "Clinic not found", null));
-            }
-
-            _context.Clinics.Remove(clinic);
-            await _context.SaveChangesAsync();
-
-            return Results.NoContent();
+            var affectedRows = await _context.Clinics.AsNoTracking().Where(x => x.ClinicId == clinicId)
+                .ExecuteDeleteAsync();
+            return affectedRows > 0
+                ? Results.Ok(new ApiResponse<object>(true, $"Deleted {affectedRows} row(s)", null))
+                : Results.NoContent();
         }
     }
 }

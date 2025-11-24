@@ -345,7 +345,7 @@ namespace ClinicManagement_API.Features.booking_service.service
 
         public async Task<IResult> ReschedulingAppointmentAsync(string token, DateTime startTime, DateTime endTime)
         {
-            var reschedulingRequest = await _context.BookingTokens.Where(x => x.Token == token
+            var reschedulingRequest = await _context.BookingTokens.Where(x => x.Token == token && x.Action == "Reschedule"
                                                                               && x.ExpiresAt > DateTime.UtcNow)
                                           .Include(bookingToken => bookingToken.Booking)
                                           .ThenInclude(booking => booking.Appointment)
@@ -380,7 +380,7 @@ namespace ClinicManagement_API.Features.booking_service.service
         public async Task<IResult> CancelAppointmentAsync(string token)
         {
             var cancelRequest = await _context.BookingTokens
-                                    .Where(x => x.Token == token && x.ExpiresAt > DateTime.UtcNow)
+                                    .Where(x => x.Token == token && x.Action == "Cancel" && x.ExpiresAt > DateTime.UtcNow)
                                     .Include(bookingToken => bookingToken.Booking)
                                     .ThenInclude(booking => booking.Appointment).FirstOrDefaultAsync()
                                 ?? throw new Exception("Not found cancel request");

@@ -12,4 +12,5 @@ public static class DoctorEndpoint
         app.MapDelete("/{doctorId:guid}", AdminHandler.DeleteDoctor);
         app.MapGet("/", AdminHandler.GetAllDoctors);
     }
+    
 }

@@ -31,6 +31,10 @@ public static class AdminHandler
     
     public static Task<IResult> CreateService(IServiceService svc, CreateServiceRequest request)
         => svc.CreateService(request);
+    public static Task<IResult> CreateAvailability(IUserService svc, CreateDoctorAvailability request)
+        => svc.CreateAvailabilityAsync(request);
+    public static Task<IResult> UpdateAvailability(IUserService svc, UpdateDoctorAvailability request)
+        => svc.U(request);
 
     public static Task<IResult> UpdateService(IServiceService svc, Guid serviceId, CreateServiceRequest request)
         => svc.UpdateService(serviceId, request);

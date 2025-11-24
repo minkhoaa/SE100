@@ -18,6 +18,7 @@ public static class UserHandler
     public static Task<IResult> GetAvailability(IUserService svc, Guid doctorId, DateOnly from, DateOnly to)
         => svc.GetAvailabilityAsync(doctorId, from, to);
 
+
     public static Task<IResult> GetSlots(IUserService svc, Guid clinicId, Guid doctorId, Guid? serviceId, DateOnly date)
         => svc.GetSlotsAsync(clinicId, doctorId, serviceId, date);
 
@@ -33,4 +34,7 @@ public static class UserHandler
         => svc.CancelAppointmentAsync(token);
     public static Task<IResult> Rescheduling(IUserService svc, string token, DateTime start, DateTime end)
         => svc.ReschedulingAppointmentAsync(token, start, end);
+    
+    public static Task<IResult> DoctorAvailabilities(IDoctorService svc, Guid doctorId)
+        => svc.DoctorAvailability(doctorId);
 }

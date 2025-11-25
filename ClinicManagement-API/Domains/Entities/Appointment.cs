@@ -1,11 +1,15 @@
 #nullable enable
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ClinicManagement_API.Domains.Enums;
 
 namespace ClinicManagement_API.Domains.Entities;
 
 public sealed class Appointment
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid AppointmentId { get; set; }
     public Guid ClinicId { get; set; }
     public Guid DoctorId { get; set; }

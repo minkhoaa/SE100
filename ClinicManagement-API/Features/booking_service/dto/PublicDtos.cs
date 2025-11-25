@@ -8,6 +8,7 @@ public record ServiceDto(Guid ServiceId, string Code, string Name, short? Defaul
 public record DoctorDto(Guid DoctorId, Guid ClinicId, string Code, string FullName, string? Specialty, string? Phone, string? Email, bool IsActive);
 public record AvailabilityDto(DateOnly Date, TimeSpan StartTime, TimeSpan EndTime, short SlotSizeMin);
 public record SlotDto(DateTime StartAt, DateTime EndAt);
+public record EnumDto(int Value, string Name);
 public record ApiResponse<T>(bool IsSuccess, string Message, T? Data);
 
 public record CreateBookingRequest(

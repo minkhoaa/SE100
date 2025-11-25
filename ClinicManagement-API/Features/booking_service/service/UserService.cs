@@ -23,7 +23,7 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> ConfirmBookingAsync(Guid bookingId);
         Task<IResult> CancelAppointmentAsync(string token);
         Task<IResult> ReschedulingAppointmentAsync(string token, DateTime startTime, DateTime startEnd);
-        
+
     }
 
     public class UserService : IUserService
@@ -231,7 +231,7 @@ namespace ClinicManagement_API.Features.booking_service.service
             // Validate slot inside availability
             var date = DateOnly.FromDateTime(req.StartAt);
             var avail = await _context.DoctorAvailabilities
-                .Where(x => x.DoctorId == req.DoctorId && x.ClinicId == req.ClinicId 
+                .Where(x => x.DoctorId == req.DoctorId && x.ClinicId == req.ClinicId
                 && x.IsActive && x.DayOfWeek == (byte)date.DayOfWeek)
                 .ToListAsync();
 
@@ -264,6 +264,8 @@ namespace ClinicManagement_API.Features.booking_service.service
             if (hasConflict)
                 return Results.Conflict(new ApiResponse<BookingResponse>(false, "Slot already taken", null));
 
+            var channel = req.Channel ?? AppointmentSource.Web;
+
             var booking = new Booking
             {
                 BookingId = Guid.NewGuid(),
@@ -276,7 +278,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 Phone = req.Phone,
                 Email = req.Email,
                 Notes = req.Notes,
-                Channel = req.Channel ?? "Web",
+                Channel = channel,
                 Status = BookingStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -298,7 +300,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 Token = reschedulingToken,
                 ExpiresAt = booking.StartAt
             };
-             
+
 
             booking.Tokens.Add(cancel);
             booking.Tokens.Add(reschedule);
@@ -360,7 +362,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 ServiceId = booking.ServiceId,
                 StartAt = booking.StartAt,
                 EndAt = booking.EndAt,
-                Source = booking.Channel ?? "Web",
+                Source = booking.Channel,
                 ContactFullName = booking.FullName,
                 ContactPhone = booking.Phone,
                 ContactEmail = booking.Email,
@@ -409,7 +411,7 @@ namespace ClinicManagement_API.Features.booking_service.service
             await transaction.CommitAsync();
             return Results.Ok(new
             {
-                isSuccess = true, 
+                isSuccess = true,
                 message = "Update successfully"
             });
         }
@@ -431,7 +433,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 return Results.Conflict("Cannot cancel appointment within 2 hours");
             await using var transaction = await _context.Database.BeginTransactionAsync();
             appointment.Status = AppointmentStatus.Cancelled;
-            appointment.UpdatedAt = DateTime.UtcNow; 
+            appointment.UpdatedAt = DateTime.UtcNow;
             _context.Appointments.Update(appointment);
             cancelRequest.ExpiresAt = DateTime.UtcNow;
             _context.BookingTokens.Update(cancelRequest);
@@ -447,8 +449,8 @@ namespace ClinicManagement_API.Features.booking_service.service
             });
         }
 
-     
-        
+
+
         private static bool Overlaps(DateTime start1, DateTime end1, DateTime start2, DateTime end2)
             => start1 < end2 && start2 < end1;
     }

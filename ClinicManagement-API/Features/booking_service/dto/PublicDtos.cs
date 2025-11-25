@@ -20,7 +20,7 @@ public record CreateBookingRequest(
     string Phone,
     string? Email,
     string? Notes,
-    string? Channel);
+    AppointmentSource? Channel);
 
 public record BookingResponse(Guid BookingId, BookingStatus Status, string? CancelToken, string? RescheduleToken);
 public record AppointmentResponse(Guid AppointmentId, AppointmentStatus Status);

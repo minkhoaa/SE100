@@ -1,4 +1,5 @@
 #nullable enable
+using ClinicManagement_API.Domains.Entities;
 using ClinicManagement_API.Domains.Enums;
 
 namespace ClinicManagement_API.Features.booking_service.dto;
@@ -27,3 +28,5 @@ public record BookingResponse(Guid BookingId, BookingStatus Status, string? Canc
 public record AppointmentResponse(Guid AppointmentId, AppointmentStatus Status);
 
 public record CreateServiceRequest(Guid ClinicId, string Code, string Name, short? DefaultDurationMin, decimal? DefaultPrice, bool IsActive);
+
+public record StaffUserDto(Guid UserId, Guid ClinicId, string UserName, string FullName, StaffRole Role, bool IsActive, Clinic Clinic);

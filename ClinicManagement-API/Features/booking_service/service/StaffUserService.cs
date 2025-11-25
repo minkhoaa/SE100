@@ -1,6 +1,7 @@
-namespace ClinicManagement_API.Features.booking_service.service;
-
-public class StaffUserService
+namespace ClinicManagement_API.Features.booking_service.service
 {
-    
+    public interface IStaffUserService
+    {
+        
+    }
 }

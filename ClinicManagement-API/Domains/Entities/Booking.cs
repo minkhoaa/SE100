@@ -19,7 +19,7 @@ public sealed class Booking
     public string Phone { get; set; } = default!;
     public string? Email { get; set; }
     public string? Notes { get; set; }
-    public string Channel { get; set; } = "Web";
+    public AppointmentSource Channel { get; set; } = AppointmentSource.Web;
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
     public DateTime CreatedAt { get; set; }

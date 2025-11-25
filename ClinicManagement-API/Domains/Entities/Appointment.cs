@@ -13,7 +13,7 @@ public sealed class Appointment
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
 
-    public string Source { get; set; } = "Web";
+    public AppointmentSource Source { get; set; } = AppointmentSource.Web;
 
     public string ContactFullName { get; set; } = default!;
     public string ContactPhone { get; set; } = default!;
@@ -21,6 +21,7 @@ public sealed class Appointment
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Booked;
 
     public Guid? BookingId { get; set; }
+
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

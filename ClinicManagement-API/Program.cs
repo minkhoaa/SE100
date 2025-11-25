@@ -36,6 +36,7 @@ app.MapEnumEndpoint();
 app.MapClinicEndpoint();
 app.MapDoctorEndpoint();
 app.MapServiceEndpoint();
+app.MapSStaffUserEndpoint();
 
 using (var scope = app.Services.CreateScope())
 {

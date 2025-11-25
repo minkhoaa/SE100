@@ -45,4 +45,9 @@ public static class AdminHandler
     public static Task<IResult> GetAllServices(IServiceService svc)
         => svc.GetAllService();
     
+    public static Task<IResult> CreateStaffUser(IAdminService svc, CreateStaffUserDto request) => svc.CreateStaffAsync(request);
+    
+    public static Task<IResult> UpdateStaffUser(IAdminService svc, Guid userId, CreateStaffUserDto req) => svc.UpdateStaffAsync(userId, req);
+
+    public static Task<IResult> DeleteStaffUser(IAdminService svc, Guid userId) => svc.DeleteStaffAsync(userId);
 }

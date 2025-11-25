@@ -29,4 +29,6 @@ public record AppointmentResponse(Guid AppointmentId, AppointmentStatus Status);
 
 public record CreateServiceRequest(Guid ClinicId, string Code, string Name, short? DefaultDurationMin, decimal? DefaultPrice, bool IsActive);
 
-public record StaffUserDto(Guid UserId, Guid ClinicId, string UserName, string FullName, StaffRole Role, bool IsActive, Clinic Clinic);
+public record StaffUserDto(Guid UserId, Guid ClinicId, string Username, string FullName, StaffRole Role, bool IsActive, Clinic Clinic);
+
+public record CreateStaffUserDto(Guid ClinicId, string Username, string FullName, StaffRole Role, bool IsActive);

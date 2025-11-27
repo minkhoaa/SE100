@@ -119,7 +119,7 @@ public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
             e.Property(x => x.FullName).HasMaxLength(150).IsRequired();
             e.Property(x => x.Phone).HasMaxLength(20).IsRequired();
             e.Property(x => x.Email).HasMaxLength(256);
-            e.Property(x => x.Channel).HasMaxLength(10).HasDefaultValue("Web");
+            e.Property(x => x.Channel).HasConversion<string>().HasMaxLength(10).HasDefaultValue(AppointmentSource.Web);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(BookingStatus.Pending);
             e.HasIndex(x => new { x.ClinicId, x.Status, x.CreatedAt }).HasDatabaseName("IX_Bookings_List");
 
@@ -154,7 +154,7 @@ public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
         {
             e.ToTable("Appointments");
             e.HasKey(x => x.AppointmentId);
-            e.Property(x => x.Source).HasMaxLength(30).HasDefaultValue("Web");
+            e.Property(x => x.Source).HasConversion<string>().HasMaxLength(30).HasDefaultValue(AppointmentSource.Web);
             e.Property(x => x.ContactFullName).HasMaxLength(150).IsRequired();
             e.Property(x => x.ContactPhone).HasMaxLength(20).IsRequired();
             e.Property(x => x.ContactEmail).HasMaxLength(256);

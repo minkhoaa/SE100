@@ -17,6 +17,12 @@ namespace ClinicManagement_API.Features.booking_service.service
         Task<IResult> UpdateStaffAsync(Guid userId, CreateStaffUserDto request);
             
         Task<IResult> DeleteStaffAsync(Guid userId);
+
+        Task <IResult> CreatePatientAsync(CreatePatientDto request);
+
+        Task<IResult> UpdatePatientAsync(Guid patientId, CreatePatientDto request);
+
+        Task<IResult> DeletePatientAsync(Guid patientId);
     }
     public class AdminService : IAdminService
     {
@@ -85,6 +91,78 @@ namespace ClinicManagement_API.Features.booking_service.service
             }
             
             var affectedRows = await _context.StaffUsers.AsNoTracking().Where(x => x.UserId == userId)
+                .ExecuteDeleteAsync();
+            return affectedRows > 0
+                ? Results.Ok(new ApiResponse<object>(true, $"Deleted {affectedRows} row(s)", null))
+                : Results.NoContent();
+        }
+
+        public async Task<IResult> CreatePatientAsync(CreatePatientDto request)
+        {
+             var existingClinic = await _context.Clinics.AsNoTracking().AnyAsync(c => c.ClinicId == request.ClinicId);
+            if (!existingClinic)
+            {
+                return Results.NotFound(new ApiResponse<object>(false, "Clinic not found", existingClinic));
+            }
+
+            var patient = new Patients
+            {
+                ClinicId = request.ClinicId,
+                PatientCode = request.PatientCode,
+                FullName = request.FullName,
+                PrimaryPhone = request.PrimaryPhone,
+                Email = request.Email,
+                Gender = request.Gender,
+                Dob = request.Dob,
+                AddressLine1 = request.AddressLine1,
+                Note = request.Note
+            };
+
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
+
+            var patientDto = new PatientDto(patient.PatientId, patient.ClinicId, patient.PatientCode, patient.FullName, patient.Gender, patient.Dob, patient.PrimaryPhone, patient.Email, patient.AddressLine1, patient.Note, patient.Clinic);
+            return Results.Created($"/patients/{patient.PatientId}", new ApiResponse<PatientDto>(true, "Patient created successfully", patientDto));
+        }
+
+        public async Task<IResult> UpdatePatientAsync(Guid patientId, CreatePatientDto request)
+        {
+            var existingClinic = await _context.Clinics.AsNoTracking().AnyAsync(c => c.ClinicId == request.ClinicId);
+            if (!existingClinic)
+            {
+                return Results.NotFound(new ApiResponse<object>(false, "Clinic not found", existingClinic));
+            }
+
+            var existingPatient = await _context.Patients.AsNoTracking().AnyAsync(c => c.PatientId == patientId);
+            if (!existingPatient)
+            {
+                return Results.NotFound(new ApiResponse<object>(false, "Patient not found", existingPatient));
+            }
+
+            var affectedRows = await _context.Patients.AsNoTracking().Where(p => p.PatientId == patientId).ExecuteUpdateAsync<Patients>(p => p
+                .SetProperty(p => p.ClinicId, request.ClinicId)
+                .SetProperty(p => p.PatientCode, request.PatientCode)
+                .SetProperty(p => p.FullName, request.FullName)
+                .SetProperty(p => p.PrimaryPhone, request.PrimaryPhone)
+                .SetProperty(p => p.Email, request.Email)
+                .SetProperty(p => p.Gender, request.Gender)
+                .SetProperty(p => p.Dob, request.Dob)
+                .SetProperty(p => p.AddressLine1, request.AddressLine1)
+                .SetProperty(p => p.Note, request.Note));
+            return affectedRows > 0
+                ? Results.Ok(new ApiResponse<object>(true, "Patient updated successfully",  affectedRows))
+                : Results.NoContent();
+        }
+
+        public async Task<IResult> DeletePatientAsync(Guid patientId)
+        {
+            var existingPatient = await _context.Patients.AsNoTracking().AnyAsync(c => c.PatientId == patientId);
+            if (!existingPatient)
+            {
+                return Results.NotFound(new ApiResponse<object>(false, "Patient not found", existingPatient));
+            }
+
+            var affectedRows = await _context.Patients.AsNoTracking().Where(x => x.PatientId == patientId)
                 .ExecuteDeleteAsync();
             return affectedRows > 0
                 ? Results.Ok(new ApiResponse<object>(true, $"Deleted {affectedRows} row(s)", null))

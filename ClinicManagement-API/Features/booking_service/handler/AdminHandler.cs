@@ -1,5 +1,6 @@
 using ClinicManagement_API.Features.booking_service.dto;
 using ClinicManagement_API.Features.booking_service.service;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagement_API.Features.booking_service.handler;
 
@@ -25,6 +26,15 @@ public static class AdminHandler
 
     public static Task<IResult> DeleteDoctor(IDoctorService svc, Guid doctorId)
         => svc.DeleteDoctorAsync(doctorId);
+    
+    public static Task<IResult> AddDoctorTimeOff(IDoctorService svc, AddDoctorTimeOffRequest request) 
+        => svc.AddDoctorTimeOffAsync(request);
+    
+    public static Task<IResult> UpdateDoctorTimeOff( Guid timeOffId, IDoctorService svc, AddDoctorTimeOffRequest request) 
+        => svc.UpdateDoctorTimeOffAsync(timeOffId, request);
+    
+    public static Task<IResult> DeleteDoctorTimeOff(IDoctorService svc, Guid timeOffId) 
+        => svc.DeleteDoctorTimeOffAsync(timeOffId);
 
     public static Task<IResult> GetAllDoctors(IDoctorService svc)
         => svc.GetAllDoctorAsync();
@@ -49,5 +59,13 @@ public static class AdminHandler
     
     public static Task<IResult> UpdateStaffUser(IAdminService svc, Guid userId, CreateStaffUserDto req) => svc.UpdateStaffAsync(userId, req);
 
+
     public static Task<IResult> DeleteStaffUser(IAdminService svc, Guid userId) => svc.DeleteStaffAsync(userId);
+
+    public static Task<IResult> CreatePatient(IAdminService svc, CreatePatientDto request) => svc.CreatePatientAsync(request);
+
+    public static Task<IResult> UpdatePatient(IAdminService svc, Guid patientId, CreatePatientDto request) => svc.UpdatePatientAsync(patientId, request);
+
+    public static Task<IResult> DeletePatient(IAdminService svc, Guid patientId) => svc.DeletePatientAsync(patientId);
 }
+

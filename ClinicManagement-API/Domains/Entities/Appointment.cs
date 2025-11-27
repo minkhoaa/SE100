@@ -1,11 +1,15 @@
 #nullable enable
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ClinicManagement_API.Domains.Enums;
 
 namespace ClinicManagement_API.Domains.Entities;
 
 public sealed class Appointment
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid AppointmentId { get; set; }
     public Guid ClinicId { get; set; }
     public Guid DoctorId { get; set; }
@@ -13,7 +17,7 @@ public sealed class Appointment
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
 
-    public string Source { get; set; } = "Web";
+    public AppointmentSource Source { get; set; } = AppointmentSource.Web;
 
     public string ContactFullName { get; set; } = default!;
     public string ContactPhone { get; set; } = default!;
@@ -21,6 +25,7 @@ public sealed class Appointment
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Booked;
 
     public Guid? BookingId { get; set; }
+
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

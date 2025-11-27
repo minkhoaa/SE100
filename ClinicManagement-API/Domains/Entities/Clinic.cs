@@ -1,11 +1,15 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ClinicManagement_API.Domains.Entities;
 
 public sealed class Clinic
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid ClinicId { get; set; }
     public string Code { get; set; } = default!;
     public string Name { get; set; } = default!;
@@ -20,4 +24,7 @@ public sealed class Clinic
     public ICollection<DoctorAvailability> DoctorAvailabilities { get; set; } = new List<DoctorAvailability>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<StaffUser> StaffUsers { get; set; } = new List<StaffUser>();
+    public ICollection<Patients> Patients { get; set; } = new List<Patients>();
+    public ICollection<DoctorTimeOff> DoctorTimeOffs { get; set; } = new List<DoctorTimeOff>();
 }

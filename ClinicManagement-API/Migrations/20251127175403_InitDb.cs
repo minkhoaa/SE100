@@ -6,17 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ClinicManagement_API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitModule1 : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "appointments");
-
             migrationBuilder.CreateTable(
                 name: "Clinics",
-                schema: "appointments",
                 columns: table => new
                 {
                     ClinicId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -34,8 +30,58 @@ namespace ClinicManagement_API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Role",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    NormalizedName = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Role", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserName = table.Column<string>(type: "text", nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "text", nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRole",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRole", x => new { x.UserId, x.RoleId });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Doctors",
-                schema: "appointments",
                 columns: table => new
                 {
                     DoctorId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -53,7 +99,6 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_Doctors_Clinics_ClinicId",
                         column: x => x.ClinicId,
-                        principalSchema: "appointments",
                         principalTable: "Clinics",
                         principalColumn: "ClinicId",
                         onDelete: ReferentialAction.Cascade);
@@ -61,7 +106,6 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Services",
-                schema: "appointments",
                 columns: table => new
                 {
                     ServiceId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -78,7 +122,6 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_Services_Clinics_ClinicId",
                         column: x => x.ClinicId,
-                        principalSchema: "appointments",
                         principalTable: "Clinics",
                         principalColumn: "ClinicId",
                         onDelete: ReferentialAction.Cascade);
@@ -86,7 +129,6 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateTable(
                 name: "DoctorAvailability",
-                schema: "appointments",
                 columns: table => new
                 {
                     AvailabilityId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -106,14 +148,12 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_DoctorAvailability_Clinics_ClinicId",
                         column: x => x.ClinicId,
-                        principalSchema: "appointments",
                         principalTable: "Clinics",
                         principalColumn: "ClinicId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DoctorAvailability_Doctors_DoctorId",
                         column: x => x.DoctorId,
-                        principalSchema: "appointments",
                         principalTable: "Doctors",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
@@ -121,7 +161,6 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Bookings",
-                schema: "appointments",
                 columns: table => new
                 {
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -145,27 +184,23 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_Bookings_Clinics_ClinicId",
                         column: x => x.ClinicId,
-                        principalSchema: "appointments",
                         principalTable: "Clinics",
                         principalColumn: "ClinicId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Bookings_Doctors_DoctorId",
                         column: x => x.DoctorId,
-                        principalSchema: "appointments",
                         principalTable: "Doctors",
                         principalColumn: "DoctorId");
                     table.ForeignKey(
                         name: "FK_Bookings_Services_ServiceId",
                         column: x => x.ServiceId,
-                        principalSchema: "appointments",
                         principalTable: "Services",
                         principalColumn: "ServiceId");
                 });
 
             migrationBuilder.CreateTable(
                 name: "DoctorServices",
-                schema: "appointments",
                 columns: table => new
                 {
                     ServiceId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -178,14 +213,12 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_DoctorServices_Doctors_DoctorId",
                         column: x => x.DoctorId,
-                        principalSchema: "appointments",
                         principalTable: "Doctors",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DoctorServices_Services_ServiceId",
                         column: x => x.ServiceId,
-                        principalSchema: "appointments",
                         principalTable: "Services",
                         principalColumn: "ServiceId",
                         onDelete: ReferentialAction.Cascade);
@@ -193,7 +226,6 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Appointments",
-                schema: "appointments",
                 columns: table => new
                 {
                     AppointmentId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -217,35 +249,30 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_Appointments_Bookings_BookingId",
                         column: x => x.BookingId,
-                        principalSchema: "appointments",
                         principalTable: "Bookings",
                         principalColumn: "BookingId",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Appointments_Clinics_ClinicId",
                         column: x => x.ClinicId,
-                        principalSchema: "appointments",
                         principalTable: "Clinics",
                         principalColumn: "ClinicId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Appointments_Doctors_DoctorId",
                         column: x => x.DoctorId,
-                        principalSchema: "appointments",
                         principalTable: "Doctors",
                         principalColumn: "DoctorId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Appointments_Services_ServiceId",
                         column: x => x.ServiceId,
-                        principalSchema: "appointments",
                         principalTable: "Services",
                         principalColumn: "ServiceId");
                 });
 
             migrationBuilder.CreateTable(
                 name: "BookingTokens",
-                schema: "appointments",
                 columns: table => new
                 {
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -259,7 +286,6 @@ namespace ClinicManagement_API.Migrations
                     table.ForeignKey(
                         name: "FK_BookingTokens_Bookings_BookingId",
                         column: x => x.BookingId,
-                        principalSchema: "appointments",
                         principalTable: "Bookings",
                         principalColumn: "BookingId",
                         onDelete: ReferentialAction.Cascade);
@@ -267,32 +293,27 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_BookingId",
-                schema: "appointments",
                 table: "Appointments",
                 column: "BookingId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_DoctorId",
-                schema: "appointments",
                 table: "Appointments",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_ServiceId",
-                schema: "appointments",
                 table: "Appointments",
                 column: "ServiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appt_Time",
-                schema: "appointments",
                 table: "Appointments",
                 columns: new[] { "ClinicId", "StartAt", "EndAt" });
 
             migrationBuilder.CreateIndex(
                 name: "UX_Appt_Doctor",
-                schema: "appointments",
                 table: "Appointments",
                 columns: new[] { "ClinicId", "DoctorId", "StartAt" },
                 unique: true,
@@ -300,64 +321,54 @@ namespace ClinicManagement_API.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_DoctorId",
-                schema: "appointments",
                 table: "Bookings",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_List",
-                schema: "appointments",
                 table: "Bookings",
                 columns: new[] { "ClinicId", "Status", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_ServiceId",
-                schema: "appointments",
                 table: "Bookings",
                 column: "ServiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookingTokens_Token",
-                schema: "appointments",
                 table: "BookingTokens",
                 column: "Token",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clinics_Code",
-                schema: "appointments",
                 table: "Clinics",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Avail_DoctorDow",
-                schema: "appointments",
                 table: "DoctorAvailability",
                 columns: new[] { "DoctorId", "DayOfWeek" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DoctorAvailability_ClinicId",
-                schema: "appointments",
                 table: "DoctorAvailability",
                 column: "ClinicId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Doctors_ClinicId_Code",
-                schema: "appointments",
                 table: "Doctors",
                 columns: new[] { "ClinicId", "Code" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DoctorServices_DoctorId",
-                schema: "appointments",
                 table: "DoctorServices",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Services_ClinicId_Code",
-                schema: "appointments",
                 table: "Services",
                 columns: new[] { "ClinicId", "Code" },
                 unique: true);
@@ -367,36 +378,37 @@ namespace ClinicManagement_API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Appointments",
-                schema: "appointments");
+                name: "Appointments");
 
             migrationBuilder.DropTable(
-                name: "BookingTokens",
-                schema: "appointments");
+                name: "BookingTokens");
 
             migrationBuilder.DropTable(
-                name: "DoctorAvailability",
-                schema: "appointments");
+                name: "DoctorAvailability");
 
             migrationBuilder.DropTable(
-                name: "DoctorServices",
-                schema: "appointments");
+                name: "DoctorServices");
 
             migrationBuilder.DropTable(
-                name: "Bookings",
-                schema: "appointments");
+                name: "Role");
 
             migrationBuilder.DropTable(
-                name: "Doctors",
-                schema: "appointments");
+                name: "User");
 
             migrationBuilder.DropTable(
-                name: "Services",
-                schema: "appointments");
+                name: "UserRole");
 
             migrationBuilder.DropTable(
-                name: "Clinics",
-                schema: "appointments");
+                name: "Bookings");
+
+            migrationBuilder.DropTable(
+                name: "Doctors");
+
+            migrationBuilder.DropTable(
+                name: "Services");
+
+            migrationBuilder.DropTable(
+                name: "Clinics");
         }
     }
 }

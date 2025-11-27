@@ -1,11 +1,16 @@
-#nullable enable
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement_API.Domains.Entities;
 using ClinicManagement_API.Domains.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ClinicManagement_API.Infrastructure.Persisstence;
 
-public class ClinicDbContext : DbContext
+public class User : IdentityUser<Guid> { }
+public class Role : IdentityRole<Guid> { }
+
+
+public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
 {
     public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options)
     {
@@ -22,8 +27,14 @@ public class ClinicDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("appointments");
+        modelBuilder.Entity<User>().ToTable("User");
+        modelBuilder.Entity<Role>().ToTable("Role");
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRole").HasKey(k => new { k.UserId, k.RoleId });
 
+        modelBuilder.Ignore<IdentityUserToken<Guid>>();
+        modelBuilder.Ignore<IdentityUserLogin<Guid>>();
+        modelBuilder.Ignore<IdentityUserClaim<Guid>>();
+        modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
 
         modelBuilder.Entity<Clinic>(e =>
         {
@@ -49,9 +60,9 @@ public class ClinicDbContext : DbContext
             e.HasIndex(x => new { x.ClinicId, x.Code }).IsUnique();
 
             e.HasOne(x => x.Clinic)
-                .WithMany(c => c.Doctors)
-                .HasForeignKey(x => x.ClinicId)
-                .OnDelete(DeleteBehavior.Cascade);
+            .WithMany(c => c.Doctors)
+            .HasForeignKey(x => x.ClinicId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Service>(e =>
@@ -173,5 +184,6 @@ public class ClinicDbContext : DbContext
                 .HasForeignKey<Appointment>(x => x.BookingId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
+
     }
 }

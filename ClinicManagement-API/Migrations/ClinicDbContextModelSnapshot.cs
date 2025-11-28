@@ -106,11 +106,12 @@ namespace ClinicManagement_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<byte>("Channel")
+                    b.Property<string>("Channel")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
-                        .HasColumnType("smallint")
-                        .HasDefaultValue((byte)1);
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("Web");
 
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uuid");
@@ -172,6 +173,7 @@ namespace ClinicManagement_API.Migrations
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.BookingToken", b =>
                 {
                     b.Property<Guid>("BookingId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("Action")
@@ -329,6 +331,7 @@ namespace ClinicManagement_API.Migrations
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.DoctorService", b =>
                 {
                     b.Property<Guid>("ServiceId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("DoctorId")
@@ -371,7 +374,7 @@ namespace ClinicManagement_API.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorTimeOff", (string)null);
+                    b.ToTable("DoctorTimeOff");
                 });
 
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.Patients", b =>
@@ -400,9 +403,7 @@ namespace ClinicManagement_API.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("Gender")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(2);
+                        .HasColumnType("integer");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
@@ -421,7 +422,7 @@ namespace ClinicManagement_API.Migrations
 
                     b.HasIndex("ClinicId");
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.Service", b =>
@@ -477,9 +478,7 @@ namespace ClinicManagement_API.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<byte>("Role")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasDefaultValue((byte)1);
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -489,7 +488,93 @@ namespace ClinicManagement_API.Migrations
 
                     b.HasIndex("ClinicId");
 
-                    b.ToTable("StaffUser", (string)null);
+                    b.ToTable("StaffUser");
+                });
+
+            modelBuilder.Entity("ClinicManagement_API.Infrastructure.Persisstence.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Role", (string)null);
+                });
+
+            modelBuilder.Entity("ClinicManagement_API.Infrastructure.Persisstence.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.ToTable("UserRole", (string)null);
                 });
 
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.Appointment", b =>
@@ -609,21 +694,17 @@ namespace ClinicManagement_API.Migrations
 
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.DoctorTimeOff", b =>
                 {
-                    b.HasOne("ClinicManagement_API.Domains.Entities.Clinic", "Clinic")
+                    b.HasOne("ClinicManagement_API.Domains.Entities.Clinic", null)
                         .WithMany("DoctorTimeOffs")
                         .HasForeignKey("ClinicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClinicManagement_API.Domains.Entities.Doctor", "Doctor")
+                    b.HasOne("ClinicManagement_API.Domains.Entities.Doctor", null)
                         .WithMany("DoctorTimeOffs")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Clinic");
-
-                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("ClinicManagement_API.Domains.Entities.Patients", b =>

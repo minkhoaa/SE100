@@ -1,13 +1,16 @@
-#nullable enable
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement_API.Domains.Entities;
 using ClinicManagement_API.Domains.Enums;
-using System.Xml;
-using System.Threading.Channels;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ClinicManagement_API.Infrastructure.Persisstence;
 
-public class ClinicDbContext : DbContext
+public class User : IdentityUser<Guid> { }
+public class Role : IdentityRole<Guid> { }
+
+
+public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
 {
     public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options)
     {
@@ -27,6 +30,15 @@ public class ClinicDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>().ToTable("User");
+        modelBuilder.Entity<Role>().ToTable("Role");
+        modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRole").HasKey(k => new { k.UserId, k.RoleId });
+
+        modelBuilder.Ignore<IdentityUserToken<Guid>>();
+        modelBuilder.Ignore<IdentityUserLogin<Guid>>();
+        modelBuilder.Ignore<IdentityUserClaim<Guid>>();
+        modelBuilder.Ignore<IdentityRoleClaim<Guid>>();
+
         modelBuilder.Entity<Clinic>(e =>
         {
             e.ToTable("Clinics");
@@ -51,9 +63,9 @@ public class ClinicDbContext : DbContext
             e.HasIndex(x => new { x.ClinicId, x.Code }).IsUnique();
 
             e.HasOne(x => x.Clinic)
-                .WithMany(c => c.Doctors)
-                .HasForeignKey(x => x.ClinicId)
-                .OnDelete(DeleteBehavior.Cascade);
+            .WithMany(c => c.Doctors)
+            .HasForeignKey(x => x.ClinicId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Service>(e =>
@@ -110,7 +122,7 @@ public class ClinicDbContext : DbContext
             e.Property(x => x.FullName).HasMaxLength(150).IsRequired();
             e.Property(x => x.Phone).HasMaxLength(20).IsRequired();
             e.Property(x => x.Email).HasMaxLength(256);
-            e.Property(x => x.Channel).HasMaxLength(10).HasDefaultValue(AppointmentSource.Web);
+            e.Property(x => x.Channel).HasConversion<string>().HasMaxLength(10).HasDefaultValue(AppointmentSource.Web);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(BookingStatus.Pending);
             e.HasIndex(x => new { x.ClinicId, x.Status, x.CreatedAt }).HasDatabaseName("IX_Bookings_List");
 
@@ -145,10 +157,7 @@ public class ClinicDbContext : DbContext
         {
             e.ToTable("Appointments");
             e.HasKey(x => x.AppointmentId);
-            e.Property(x => x.Source)
-                .HasConversion<string>()
-                .HasMaxLength(30)
-                .HasDefaultValue(AppointmentSource.Web);
+            e.Property(x => x.Source).HasConversion<string>().HasMaxLength(30).HasDefaultValue(AppointmentSource.Web);
             e.Property(x => x.ContactFullName).HasMaxLength(150).IsRequired();
             e.Property(x => x.ContactPhone).HasMaxLength(20).IsRequired();
             e.Property(x => x.ContactEmail).HasMaxLength(256);
@@ -184,8 +193,8 @@ public class ClinicDbContext : DbContext
             e.HasKey(x => x.PatientId);
             e.Property(k => k.Gender).HasDefaultValue(Gender.X);
             e.HasOne(x => x.Clinic)
-            .WithMany(k => k.Patients)
-            .HasForeignKey(x => x.ClinicId);
+                .WithMany(k => k.Patients)
+                .HasForeignKey(x => x.ClinicId);
         });
         modelBuilder.Entity<StaffUser>(e =>
         {
@@ -193,20 +202,20 @@ public class ClinicDbContext : DbContext
             e.HasKey(x => x.UserId);
             e.Property(k => k.Role).HasDefaultValue(StaffRole.Receptionist);
             e.HasOne(x => x.Clinic)
-            .WithMany(k => k.StaffUsers)
-            .HasForeignKey(x => x.ClinicId);
+                .WithMany(k => k.StaffUsers)
+                .HasForeignKey(x => x.ClinicId);
         });
         modelBuilder.Entity<DoctorTimeOff>(e =>
         {
             e.ToTable("DoctorTimeOff");
             e.HasKey(x => x.TimeOffId);
             e.HasOne(x => x.Doctor)
-            .WithMany(k => k.DoctorTimeOffs)
-            .HasForeignKey(x => x.DoctorId);
+                .WithMany(k => k.DoctorTimeOffs)
+                .HasForeignKey(x => x.DoctorId);
             e.HasOne(x => x.Clinic)
-            .WithMany(a => a.DoctorTimeOffs)
-            .HasForeignKey(k => k.ClinicId)
-            ;
+                .WithMany(a => a.DoctorTimeOffs)
+                .HasForeignKey(k => k.ClinicId)
+                ;
         });
     }
 }

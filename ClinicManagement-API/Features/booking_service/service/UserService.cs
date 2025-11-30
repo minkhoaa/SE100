@@ -170,6 +170,11 @@ namespace ClinicManagement_API.Features.booking_service.service
                 (!x.EffectiveTo.HasValue || x.EffectiveTo.Value.Date >= date.ToDateTime(TimeOnly.MinValue))
             ).ToList();
 
+            var doctorTimeOffs = await _context.DoctorTimeOffs
+                .Where(t => t.DoctorId == doctorId && t.StartAt.Date <= date.ToDateTime(TimeOnly.MinValue) && t.EndAt.Date >= date.ToDateTime(TimeOnly.MinValue))
+                .Select(t => new { t.StartAt, t.EndAt })
+                .ToListAsync();
+
             var bookedAppointments = await _context.Appointments
                 .Where(a => a.DoctorId == doctorId && a.ClinicId == clinicId && a.StartAt.Date == date.ToDateTime(TimeOnly.MinValue).Date
                     && a.Status != AppointmentStatus.Cancelled && a.Status != AppointmentStatus.NoShow)
@@ -182,7 +187,7 @@ namespace ClinicManagement_API.Features.booking_service.service
                 .Select(b => new { b.StartAt, b.EndAt })
                 .ToListAsync();
 
-            var blocked = bookedAppointments.Concat(bookedPending).ToList();
+            var blocked = bookedAppointments.Concat(bookedPending).Concat(doctorTimeOffs).ToList();
 
             var result = new List<SlotDto>();
             foreach (var avail in availabilities)
@@ -227,6 +232,13 @@ namespace ClinicManagement_API.Features.booking_service.service
                 if (!doctorSupportsService)
                     return Results.BadRequest(new ApiResponse<BookingResponse>(false, "Doctor does not offer this service", null));
             }
+            
+            var hasTimeOffConflict = await _context.DoctorTimeOffs.AnyAsync(t =>
+                t.DoctorId == req.DoctorId &&
+                Overlaps(t.StartAt, t.EndAt, req.StartAt, req.EndAt));
+
+            if (hasTimeOffConflict)
+                return Results.Conflict(new ApiResponse<BookingResponse>(false, "Doctor is on time off during the selected period.", null));
 
             // Validate slot inside availability
             var date = DateOnly.FromDateTime(req.StartAt);

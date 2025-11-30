@@ -24,6 +24,9 @@ public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<BookingToken> BookingTokens => Set<BookingToken>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<Patients> Patients => Set<Patients>();
+    public DbSet<StaffUser> StaffUsers => Set<StaffUser>();
+    public DbSet<DoctorTimeOff> DoctorTimeOffs => Set<DoctorTimeOff>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -184,6 +187,35 @@ public class ClinicDbContext : IdentityDbContext<User, Role, Guid>
                 .HasForeignKey<Appointment>(x => x.BookingId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
-
+        modelBuilder.Entity<Patients>(e =>
+        {
+            e.ToTable("Patients");
+            e.HasKey(x => x.PatientId);
+            e.Property(k => k.Gender).HasDefaultValue(Gender.X);
+            e.HasOne(x => x.Clinic)
+                .WithMany(k => k.Patients)
+                .HasForeignKey(x => x.ClinicId);
+        });
+        modelBuilder.Entity<StaffUser>(e =>
+        {
+            e.ToTable("StaffUser");
+            e.HasKey(x => x.UserId);
+            e.Property(k => k.Role).HasDefaultValue(StaffRole.Receptionist);
+            e.HasOne(x => x.Clinic)
+                .WithMany(k => k.StaffUsers)
+                .HasForeignKey(x => x.ClinicId);
+        });
+        modelBuilder.Entity<DoctorTimeOff>(e =>
+        {
+            e.ToTable("DoctorTimeOff");
+            e.HasKey(x => x.TimeOffId);
+            e.HasOne(x => x.Doctor)
+                .WithMany(k => k.DoctorTimeOffs)
+                .HasForeignKey(x => x.DoctorId);
+            e.HasOne(x => x.Clinic)
+                .WithMany(a => a.DoctorTimeOffs)
+                .HasForeignKey(k => k.ClinicId)
+                ;
+        });
     }
 }

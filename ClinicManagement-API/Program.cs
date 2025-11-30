@@ -63,6 +63,8 @@ app.MapBookingEndpoint();
 app.MapEnumEndpoint();
 app.MapClinicEndpoint();
 app.MapDoctorEndpoint();
+app.MapStaffUserEndpoint();
+app.MapPatientEndpoint();
 app.MapServiceEndpoint();
 app.MapAuthEndpoint();
 

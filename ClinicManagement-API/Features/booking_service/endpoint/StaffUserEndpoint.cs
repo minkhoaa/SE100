@@ -7,7 +7,7 @@ namespace ClinicManagement_API.Features.booking_service.endpoint;
 
 public static class StaffUserEndpoint
 {
-    public static void MapSStaffUserEndpoint(this IEndpointRouteBuilder route)
+    public static void MapStaffUserEndpoint(this IEndpointRouteBuilder route)
     {
         var app = route.MapGroup("/api/admin/staff-user").WithTags("StaffUsers Management");
         app.MapPost("/", AdminHandler.CreateStaffUser);
